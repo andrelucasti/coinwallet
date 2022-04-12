@@ -25,6 +25,8 @@ func NewWallet(name string, userId uuid.UUID) *Wallet {
 	w := new(Wallet)
 	w.Name = name
 	w.UserId = userId
+	w.CreatedDate = time.Now()
+	w.LastedModifiedDate = time.Now()
 
 	return w
 }
