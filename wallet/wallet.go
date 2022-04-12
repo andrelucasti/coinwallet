@@ -8,24 +8,29 @@ import (
 
 type Wallet struct {
 	Id                 uuid.UUID `json:"id"`
-	Name               string    `json:"name"`
-	UserId             uuid.UUID `json:"userId"`
+	Name               string    `json:"name" validate:"required"`
+	UserId             uuid.UUID `json:"userId" validate:"required"`
 	CreatedDate        time.Time `json:"createdDate"`
 	LastedModifiedDate time.Time `json:"lastedModifiedDate"`
 }
 
-type WalletApiError struct {
-	HttpErrorCode int
-	Message       string
-}
-
-func (w Wallet) Save() (Wallet, WalletApiError) {
-	var wApiError = WalletApiError{}
-
-	if w.UserId == uuid.MustParse("00000000-0000-0000-0000-000000000000") {
-		wApiError.HttpErrorCode = 400
-		wApiError.Message = "Bad request: userId is empty, please, put any userId"
+func NewWallet(name string, userId uuid.UUID) *Wallet {
+	if userId == uuid.MustParse("00000000-0000-0000-0000-000000000000") {
+		return &Wallet{}
+	}
+	if name == "" {
+		return &Wallet{}
 	}
 
-	return (Wallet{}), (wApiError)
+	w := new(Wallet)
+	w.Name = name
+	w.UserId = userId
+
+	return w
+}
+
+func (w Wallet) Save() Wallet {
+	newWallet := NewWallet(w.Name, w.UserId)
+
+	return *newWallet
 }
