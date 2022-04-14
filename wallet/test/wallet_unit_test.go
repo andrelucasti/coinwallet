@@ -35,7 +35,6 @@ func TestWalletWhenNameIsEmpty(t *testing.T) {
 }
 
 func TestSaveWallet(t *testing.T) {
-
 	w := wallet.Wallet{
 		Name:   "CryptoGames",
 		UserId: uuid.MustParse("258BAE13-F477-4F96-9C7C-D9124A10A53E"),
