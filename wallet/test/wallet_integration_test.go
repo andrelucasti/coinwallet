@@ -10,15 +10,14 @@ import (
 
 const InvalidId = "00000000-0000-0000-0000-000000000000"
 
-func init() {
-
-}
-
 func TestSavePersistWallet(t *testing.T) {
+	cleanWalletTable()
+
 	name := "CryptoGames"
 	userId := uuid.MustParse("258BAE13-F477-4F96-9C7C-D9124A10A53E")
 	createdDate := time.Now()
 	lastModifiedDate := time.Now()
+	value := 0
 
 	w := wallet.Wallet{
 		Name:               name,
@@ -42,4 +41,12 @@ func TestSavePersistWallet(t *testing.T) {
 		t.Error("Expected: ", userId, "Got: ", actual.UserId)
 	}
 
+	if value != int(actual.GetValue()) {
+		t.Error("Expected: ", value, "Got: ", actual.GetValue())
+	}
+}
+
+func cleanWalletTable() {
+	repository := wallet.Repository{}
+	repository.DeleteAll()
 }

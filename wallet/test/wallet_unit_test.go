@@ -54,3 +54,18 @@ func TestSaveWallet(t *testing.T) {
 		t.Error("Expected: ", expected, "Got: ", actual)
 	}
 }
+
+func TestWalletWhenCreatedTheValueIsEqualZero(t *testing.T) {
+	w := wallet.Wallet{
+		Name:               "My Wallet From Crypto",
+		UserId:             uuid.MustParse("258BAE13-F477-4F96-9C7C-D9124A10A53E"),
+		CreatedDate:        time.Now(),
+		LastedModifiedDate: time.Now(),
+	}
+
+	actual := w.Save()
+
+	if actual.GetValue() != 0 {
+		t.Error("Expected: ", 0, "Got: ", actual)
+	}
+}
