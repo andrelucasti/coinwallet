@@ -51,9 +51,12 @@ func (r Repository) DeleteAll() {
 			log.Fatal("Error to delete all wallets", err)
 		}
 
+		defer db.Close()
+
 	} else {
 		log.Fatal(" Error to open connection with database", err.Error())
 	}
+
 }
 
 func fetchWallets(db *sql.DB) []Wallet {
