@@ -1,62 +1,55 @@
 package wallet
 
 import (
+	"coinwallet/dbcmanager"
 	"database/sql"
+	"github.com/google/uuid"
 	"log"
-
-	_ "github.com/lib/pq"
 )
 
-type Repository struct{}
-
-//TODO Create a file configuration... yml or .env ...
-const datasourceName = "user=coinwallet dbname=coinwallet password=coinwallet host=localhost sslmode=disable"
-const driverName = "postgres"
-
-func (r Repository) Save(w Wallet) {
-	// TODO refactor
-	if db, err := sql.Open(driverName, datasourceName); err == nil {
-		query := "INSERT INTO WALLET (name, user_id, value, created_date, last_modified_date) VALUES($1, $2, $3, $4, $5)"
-
-		if _, err := db.Query(query, w.Name, w.UserId, w.GetValue(), w.CreatedDate, w.LastedModifiedDate); err != nil {
-			log.Fatal("Error to persist wallet", err)
-		}
-
-		defer db.Close()
-
-	} else {
-		log.Fatal(" Error to open connection", err.Error())
-
-	}
-
+type IRepository interface {
+	Save(w Wallet)
+	Update(w Wallet) Wallet
+	FindAll() []Wallet
+	FindById(id uuid.UUID) Wallet
 }
 
-func (r Repository) FindAll() []Wallet {
-	if db, err := sql.Open(driverName, datasourceName); err == nil {
-		log.Println("Opened connection")
+type RepositoryImpl struct{}
 
-		return fetchWallets(db)
+func (r RepositoryImpl) Save(w Wallet) {
+	db := dbcmanager.OpenConnection()
+	query := "INSERT INTO WALLET (name, user_id, value, created_date, last_modified_date) VALUES($1, $2, $3, $4, $5)"
 
-	} else {
-		log.Fatal(" Error to open connection with database", err.Error())
-		return nil
+	if _, err := db.Query(query, w.Name, w.UserId, w.GetValue(), w.CreatedDate, w.LastedModifiedDate); err != nil {
+		log.Fatal("Error to persist wallet", err)
 	}
+
+	defer dbcmanager.CloseConnection(db)
 }
 
-func (r Repository) DeleteAll() {
-	if db, err := sql.Open(driverName, datasourceName); err == nil {
-		_, err := db.Query("DELETE FROM wallet")
+func (r RepositoryImpl) FindAll() []Wallet {
+	db := dbcmanager.OpenConnection()
+	defer dbcmanager.CloseConnection(db)
+	return fetchWallets(db)
+}
 
-		if err != nil {
-			log.Fatal("Error to delete all wallets", err)
-		}
+func (r RepositoryImpl) DeleteAll() {
+	db := dbcmanager.OpenConnection()
+	_, err := db.Query("DELETE FROM wallet")
 
-		defer db.Close()
-
-	} else {
-		log.Fatal(" Error to open connection with database", err.Error())
+	if err != nil {
+		log.Fatal("Error to delete all wallets", err)
 	}
 
+	defer dbcmanager.CloseConnection(db)
+}
+
+func (r RepositoryImpl) FindById(id uuid.UUID) Wallet {
+	return Wallet{Name: "mi ovito"}
+}
+
+func (r RepositoryImpl) Update(wallet Wallet) Wallet {
+	return wallet
 }
 
 func fetchWallets(db *sql.DB) []Wallet {

@@ -13,10 +13,15 @@ type Wallet struct {
 	value              int64
 	CreatedDate        time.Time `json:"createdDate"`
 	LastedModifiedDate time.Time `json:"lastedModifiedDate"`
-	repository         Repository
 }
 
-//Constructor
+var Repository IRepository
+
+func init() {
+	Repository = RepositoryImpl{}
+}
+
+// NewWallet Constructor
 func NewWallet(name string, userId uuid.UUID) *Wallet {
 	if userId == uuid.MustParse("00000000-0000-0000-0000-000000000000") {
 		return &Wallet{}
@@ -37,15 +42,42 @@ func NewWallet(name string, userId uuid.UUID) *Wallet {
 
 func (w Wallet) Save() Wallet {
 	newWallet := NewWallet(w.Name, w.UserId)
-	w.repository.Save(*newWallet)
+	Repository.Save(*newWallet)
 
 	return *newWallet
 }
 
+func (w Wallet) Update() Wallet {
+	currentWallet := Repository.FindById(w.Id)
+
+	if currentWallet.LastedModifiedDate.Before(w.LastedModifiedDate) {
+		wallet := w.newWalletWithId()
+
+		return Repository.Update(*wallet)
+	}
+
+	return currentWallet
+}
+
 func (w Wallet) FindAll() []Wallet {
-	return w.repository.FindAll()
+	return Repository.FindAll()
+}
+
+func (w Wallet) FindById(id uuid.UUID) Wallet {
+	return Repository.FindById(id)
 }
 
 func (w Wallet) GetValue() int64 {
 	return w.value
+}
+
+func (w Wallet) newWalletWithId() *Wallet {
+	wallet := new(Wallet)
+	wallet.Id = w.Id
+	wallet.UserId = w.UserId
+	wallet.Name = w.Name
+	wallet.value = w.value
+	wallet.CreatedDate = w.CreatedDate
+	wallet.LastedModifiedDate = w.LastedModifiedDate
+	return wallet
 }

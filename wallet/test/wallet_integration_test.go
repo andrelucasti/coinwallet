@@ -46,7 +46,17 @@ func TestSavePersistWallet(t *testing.T) {
 	}
 }
 
+func TestUpdateWallet(t *testing.T) {
+	cleanWalletTable()
+
+}
+
+func TestUpdateWalletValue(t *testing.T) {
+	cleanWalletTable()
+
+}
+
 func cleanWalletTable() {
-	repository := wallet.Repository{}
+	repository := wallet.RepositoryImpl{}
 	repository.DeleteAll()
 }
