@@ -48,12 +48,43 @@ func TestSavePersistWallet(t *testing.T) {
 
 func TestUpdateWallet(t *testing.T) {
 	cleanWalletTable()
+	name := "CryptoGames"
+	userId := uuid.MustParse("258BAE13-F477-4F96-9C7C-D9124A10A53E")
+	createdDate := time.Now()
 
-}
+	w := wallet.Wallet{
+		Name:               name,
+		UserId:             userId,
+		CreatedDate:        createdDate,
+		LastedModifiedDate: time.Now().Add(time.Hour * -1),
+	}
 
-func TestUpdateWalletValue(t *testing.T) {
-	cleanWalletTable()
+	w.Save()
 
+	walletSaved := w.FindAll()[0]
+
+	id := walletSaved.Id
+	wUpdate := wallet.Wallet{
+		Id:                 id,
+		Name:               "Hold 2022",
+		UserId:             userId,
+		CreatedDate:        createdDate,
+		LastedModifiedDate: time.Now(),
+	}
+
+	walletUpdated := wUpdate.Update()
+
+	if walletUpdated.Id != id {
+		t.Error("Expected: ", id, "Got: ", walletUpdated.Id)
+	}
+
+	if walletUpdated.UserId != userId {
+		t.Error("Expected: ", userId, "Got: ", walletUpdated.UserId)
+	}
+
+	if walletUpdated.Name == w.Name {
+		t.Error("Expected: ", wUpdate.Name, "Got: ", walletUpdated.Name)
+	}
 }
 
 func cleanWalletTable() {
