@@ -9,5 +9,14 @@ services:
       - POSTGRES_USER=coinwallet
       - POSTGRES_PASSWORD=coinwallet
       - POSTGRES_DB=coinwallet
+
+  aws-local:
+    container_name: aws-local
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+      - "8283:8080"
+    environment:
+      - "SERVICES=sqs"
 volumes:
   postgres_coinwallet:

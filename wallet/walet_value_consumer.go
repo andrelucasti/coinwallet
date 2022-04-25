@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -29,7 +30,23 @@ type ValueConsumer struct {
 func Consumer() {
 	qName := flag.String("q", "wallet_value", "The name of the queue")
 	waitTime := flag.Int("w", 10, "How long the queue waits for messages")
-	if defaultConfig, err := config.LoadDefaultConfig(context.TODO()); err == nil {
+	awsRegion := "us-east-1"
+	awsEndpoint := "http://localhost:4566"
+
+	//TODO Improve
+	customResolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+
+		return aws.Endpoint{
+			URL:           awsEndpoint,
+			SigningRegion: region,
+			PartitionID:   "aws",
+		}, nil
+	})
+
+	if defaultConfig, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithRegion(awsRegion),
+		config.WithEndpointResolver(customResolver)); err == nil {
 		client := sqs.NewFromConfig(defaultConfig)
 		qInput := &sqs.GetQueueUrlInput{
 			QueueName: qName,
@@ -43,10 +60,11 @@ func Consumer() {
 
 		queueUrl := url.QueueUrl
 
+		//TODO Need Understand more this parameters
 		mInput := &sqs.ReceiveMessageInput{
 			QueueUrl:              queueUrl,
 			AttributeNames:        []types.QueueAttributeName{"SentTimestamp"},
-			MaxNumberOfMessages:   1,
+			MaxNumberOfMessages:   10,
 			MessageAttributeNames: []string{"All"},
 			WaitTimeSeconds:       int32(*waitTime),
 		}
@@ -57,7 +75,10 @@ func Consumer() {
 			log.Println("Got a error receiving messages: ", err)
 		}
 
-		fmt.Println(messages)
+		for _, msg := range messages.Messages {
+			fmt.Println("msg id: " + *msg.MessageId)
+			fmt.Println("msg body: " + *msg.Body)
+		}
 	} else {
 		log.Println("Got a error loading default configs: ", err)
 	}
