@@ -1,7 +1,7 @@
 package main
 
-import "coinwallet/wallet"
+import "coinwallet/aws"
 
 func main() {
-	wallet.Consumer()
+	aws.CreateWorkerPool()
 }
